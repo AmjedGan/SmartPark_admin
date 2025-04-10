@@ -39,33 +39,120 @@ class CarManagementApp:
         self.load_voiture_admin()
 
     def configure_styles(self):
+        """Configure les styles personnalisés pour l'application"""
         style = ttk.Style()
         style.theme_use("clam")
-
-        style.configure("TButton",
-                        background="#007acc",
-                        foreground="white",
-                        font=('Segoe UI', 10, 'bold'),
-                        padding=6)
-        style.map("TButton",
-                  background=[('active', '#005f99')])
-
-        style.configure("TLabel", font=('Segoe UI', 10))
-        style.configure("TEntry", font=('Segoe UI', 10), padding=5)
-
-        style.configure("Treeview",
-                        background="white",
-                        foreground="black",
-                        rowheight=25,
-                        fieldbackground="white",
-                        font=('Segoe UI', 10))
-        style.configure("Treeview.Heading",
-                        font=('Segoe UI', 10, 'bold'),
-                        background="#007acc",
-                        foreground="white")
-
-        style.configure("TLabelframe", background="#f2f2f2")
-        style.configure("TLabelframe.Label", font=('Segoe UI', 10, 'bold'))
+        
+        # Couleurs principales
+        style.configure('Custom.TFrame',
+            background="#f5f5f5",
+            relief="flat"
+        )
+        
+        # Style pour les labels
+        style.configure('Custom.TLabel',
+            font=('Segoe UI', 10),
+            background="#f5f5f5",
+            foreground="#333333",
+            padding=5
+        )
+        
+        # Style pour les champs de saisie
+        style.configure('Custom.TEntry',
+            font=('Segoe UI', 10),
+            padding=5,
+            relief="flat",
+            fieldbackground="white"
+        )
+        
+        # Style pour les boutons
+        style.configure('Add.TButton',
+            font=('Segoe UI', 10, 'bold'),
+            padding=8,
+            background="#4CAF50",
+            foreground="white",
+            relief="flat"
+        )
+        
+        style.configure('Edit.TButton',
+            font=('Segoe UI', 10, 'bold'),
+            padding=8,
+            background="#2196F3",
+            foreground="white",
+            relief="flat"
+        )
+        
+        style.configure('Delete.TButton',
+            font=('Segoe UI', 10, 'bold'),
+            padding=8,
+            background="#F44336",
+            foreground="white",
+            relief="flat"
+        )
+        
+        style.configure('Image.TButton',
+            font=('Segoe UI', 10, 'bold'),
+            padding=8,
+            background="#9C27B0",
+            foreground="white",
+            relief="flat"
+        )
+        
+        style.configure('Search.TButton',
+            font=('Segoe UI', 10),
+            padding=6,
+            background="#2196F3",
+            foreground="white",
+            relief="flat"
+        )
+        
+        # Configuration des effets de survol
+        style.map('Add.TButton',
+            background=[('active', '#388E3C')],
+            relief=[('pressed', 'sunken')]
+        )
+        
+        style.map('Edit.TButton',
+            background=[('active', '#1976D2')],
+            relief=[('pressed', 'sunken')]
+        )
+        
+        style.map('Delete.TButton',
+            background=[('active', '#D32F2F')],
+            relief=[('pressed', 'sunken')]
+        )
+        
+        style.map('Image.TButton',
+            background=[('active', '#7B1FA2')],
+            relief=[('pressed', 'sunken')]
+        )
+        
+        style.map('Search.TButton',
+            background=[('active', '#1976D2')],
+            relief=[('pressed', 'sunken')]
+        )
+        
+        # Style pour le Treeview
+        style.configure('Treeview',
+            font=('Segoe UI', 10),
+            background="white",
+            foreground="#333333",
+            fieldbackground="white",
+            rowheight=25
+        )
+        
+        style.configure('Treeview.Heading',
+            font=('Segoe UI', 10, 'bold'),
+            background="#2196F3",
+            foreground="white",
+            relief="flat"
+        )
+        
+        # Configuration de la couleur de sélection en bleu clair
+        style.map('Treeview',
+            background=[('selected', '#90CAF9')],
+            foreground=[('selected', '#333333')]
+        )
 
     def load_icons(self):
         """Charge les icônes de l'application avec gestion des erreurs"""
@@ -73,6 +160,7 @@ class CarManagementApp:
         self.icon_edit = None
         self.icon_delete = None
         self.icon_search = None
+        self.icon_image = None
         
         try:
             if not os.path.exists(self.icon_folder):
@@ -82,10 +170,11 @@ class CarManagementApp:
                 
             # Liste des icônes nécessaires
             required_icons = {
-                'pen.png': 'self.icon_add',
-                '.png': 'self.icon_edit',
-                'delete.png': 'self.icon_delete',
-                'search.png': 'self.icon_search'
+                'pen.png': 'icon_add',
+                'plus.png': 'icon_edit',
+                'delete.png': 'icon_delete',
+                'search.png': 'icon_search',
+                'image.png': 'icon_image'
             }
             
             # Vérification et chargement des icônes
@@ -99,7 +188,7 @@ class CarManagementApp:
                             icon = icon.resize((16, 16))
                         else:
                             icon = icon.resize((20, 20))
-                        setattr(self, var_name[2:], ImageTk.PhotoImage(icon))
+                        setattr(self, var_name, ImageTk.PhotoImage(icon))
                         print(f"Icône {icon_file} chargée avec succès")
                     except Exception as e:
                         print(f"Erreur lors du chargement de l'icône {icon_file}: {str(e)}")
@@ -124,67 +213,75 @@ class CarManagementApp:
         self.conn.commit()
 
     def create_widgets(self):
-        main_frame = ttk.Frame(self.root, padding="10")
+        # Frame principal
+        main_frame = ttk.Frame(self.root, padding="20", style='Custom.TFrame')
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        search_frame = ttk.Frame(main_frame)
-        search_frame.pack(fill=tk.X, padx=5, pady=5)
+        # Frame pour la recherche
+        search_frame = ttk.Frame(main_frame, style='Custom.TFrame')
+        search_frame.pack(fill=tk.X, pady=(0, 20))
 
-        ttk.Label(search_frame, text="Rechercher:").pack(side=tk.LEFT, padx=5)
+        ttk.Label(search_frame, text="Rechercher:", style='Custom.TLabel').pack(side=tk.LEFT, padx=5)
         self.search_var = tk.StringVar()
         self.search_var.trace('w', self.on_search_change)
-        self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=40)
+        self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=40, style='Custom.TEntry')
         self.search_entry.pack(side=tk.LEFT, padx=5)
         
-        search_button = ttk.Button(search_frame, text=" Rechercher", command=self.rechercher_voiture)
-        if self.icon_search:
+        search_button = ttk.Button(search_frame, text=" Rechercher", command=self.rechercher_voiture, style='Search.TButton')
+        if hasattr(self, 'icon_search') and self.icon_search:
             search_button.configure(image=self.icon_search, compound="left")
         search_button.pack(side=tk.LEFT, padx=5)
 
-        content_frame = ttk.Frame(main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True)
+        # Frame pour le formulaire
+        form_frame = ttk.Frame(main_frame, style='Custom.TFrame')
+        form_frame.pack(fill=tk.X, pady=(0, 20))
 
-        form_frame = ttk.LabelFrame(content_frame, text="Informations Voiture", padding="10")
-        form_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
-
-        ttk.Label(form_frame, text="Marque:").grid(row=0, column=0, sticky=tk.W)
+        # Champs du formulaire alignés horizontalement
+        ttk.Label(form_frame, text="Marque:", style='Custom.TLabel').pack(side=tk.LEFT, padx=5)
         self.marque_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=self.marque_var).grid(row=0, column=1, padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=self.marque_var, width=15, style='Custom.TEntry').pack(side=tk.LEFT, padx=5)
 
-        ttk.Label(form_frame, text="Modèle:").grid(row=1, column=0, sticky=tk.W)
+        ttk.Label(form_frame, text="Modèle:", style='Custom.TLabel').pack(side=tk.LEFT, padx=5)
         self.modele_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=self.modele_var).grid(row=1, column=1, padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=self.modele_var, width=15, style='Custom.TEntry').pack(side=tk.LEFT, padx=5)
 
-        ttk.Label(form_frame, text="Année:").grid(row=2, column=0, sticky=tk.W)
+        ttk.Label(form_frame, text="Année:", style='Custom.TLabel').pack(side=tk.LEFT, padx=5)
         self.annee_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=self.annee_var).grid(row=2, column=1, padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=self.annee_var, width=10, style='Custom.TEntry').pack(side=tk.LEFT, padx=5)
 
-        ttk.Label(form_frame, text="Prix:").grid(row=3, column=0, sticky=tk.W)
+        ttk.Label(form_frame, text="Prix:", style='Custom.TLabel').pack(side=tk.LEFT, padx=5)
         self.prix_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=self.prix_var).grid(row=3, column=1, padx=5, pady=5)
+        ttk.Entry(form_frame, textvariable=self.prix_var, width=10, style='Custom.TEntry').pack(side=tk.LEFT, padx=5)
 
-        ttk.Button(form_frame, text="Sélectionner Image", command=self.select_image).grid(row=4, column=0, columnspan=2, pady=10)
+        # Bouton sélectionner image
+        image_button = ttk.Button(form_frame, text=" Sélectionner Image", command=self.select_image, style='Image.TButton')
+        if hasattr(self, 'icon_image') and self.icon_image:
+            image_button.configure(image=self.icon_image, compound="left")
+        image_button.pack(side=tk.LEFT, padx=5)
 
-        button_frame = ttk.Frame(form_frame)
-        button_frame.grid(row=5, column=0, columnspan=2, pady=10)
+        # Frame pour les boutons d'action
+        button_frame = ttk.Frame(form_frame, style='Custom.TFrame')
+        button_frame.pack(side=tk.RIGHT, padx=10)
 
-        add_button = ttk.Button(button_frame, text=" Ajouter", command=self.add_car)
-        if self.icon_add:
+        # Boutons d'action
+        add_button = ttk.Button(button_frame, text=" Ajouter", command=self.add_car, style='Add.TButton')
+        if hasattr(self, 'icon_add') and self.icon_add:
             add_button.configure(image=self.icon_add, compound="left")
         add_button.pack(side=tk.LEFT, padx=5)
 
-        edit_button = ttk.Button(button_frame, text=" Modifier", command=self.update_car)
-        if self.icon_edit:
+        edit_button = ttk.Button(button_frame, text=" Modifier", command=self.update_car, style='Edit.TButton')
+        if hasattr(self, 'icon_edit') and self.icon_edit:
             edit_button.configure(image=self.icon_edit, compound="left")
         edit_button.pack(side=tk.LEFT, padx=5)
 
-        delete_button = ttk.Button(button_frame, text=" Supprimer", command=self.delete_car)
-        if self.icon_delete:
+        delete_button = ttk.Button(button_frame, text=" Supprimer", command=self.delete_car, style='Delete.TButton')
+        if hasattr(self, 'icon_delete') and self.icon_delete:
             delete_button.configure(image=self.icon_delete, compound="left")
         delete_button.pack(side=tk.LEFT, padx=5)
 
-        self.tree = ttk.Treeview(content_frame, columns=("ID", "Marque", "Modèle", "Année", "Prix", "Image"), show="headings")
-        self.tree.pack(fill=tk.BOTH, expand=True)
+        # Treeview
+        self.tree = ttk.Treeview(main_frame, columns=("ID", "Marque", "Modèle", "Année", "Prix", "Image"), show="headings")
+        self.tree.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
 
         self.tree.heading("ID", text="ID")
         self.tree.heading("Marque", text="Marque")
@@ -193,11 +290,12 @@ class CarManagementApp:
         self.tree.heading("Prix", text="Prix")
         self.tree.heading("Image", text="Image")
 
-        self.image_frame = ttk.LabelFrame(content_frame, text="Image", padding="10")
-        self.image_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=5, pady=5)
+        # Frame pour l'image
+        self.image_frame = ttk.LabelFrame(main_frame, text="Image", padding="10", style='Custom.TFrame')
+        self.image_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.image_label = ttk.Label(self.image_frame)
-        self.image_label.pack()
+        self.image_label = ttk.Label(self.image_frame, style='Custom.TLabel')
+        self.image_label.pack(expand=True)
 
         self.tree.bind('<<TreeviewSelect>>', self.on_select)
 
