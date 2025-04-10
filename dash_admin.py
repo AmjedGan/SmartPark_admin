@@ -2,46 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import mysql.connector
 from mysql.connector import Error
-import customtkinter as ctk
-from PIL import Image, ImageTk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
-from datetime import datetime
-import threading
-import time
-import json
-import os
 
-# Set appearance mode and color theme
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
-
-class DashboardAdmin(ctk.CTk):
-    def __init__(self):
-        super().__init__()
+class DashboardAdmin:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Dashboard Admin - Gestion Parc Automobile")
+        self.root.geometry("1200x600")
         
-        self.title("Parking Management System - Admin Dashboard")
-        self.geometry("1400x800")
-        self.minsize(1200, 700)
-        
-        # Initialize database connection
-        self.initialize_database()
-        
-        # Create main container
-        self.main_container = ctk.CTkFrame(self)
-        self.main_container.pack(fill=tk.BOTH, expand=True)
-        
-        # Create sidebar
-        self.create_sidebar()
-        
-        # Create main content area
-        self.create_main_content()
-        
-        # Initialize data refresh thread
-        self.start_data_refresh()
-        
-    def initialize_database(self):
+        # Connexion à la base de données
         try:
             self.conn = mysql.connector.connect(
                 host="localhost",
@@ -50,316 +18,232 @@ class DashboardAdmin(ctk.CTk):
                 database="parc_automobile"
             )
             self.cursor = self.conn.cursor()
-            self.create_tables()
+            self.create_table()
         except Error as e:
-            messagebox.showerror("Error", f"Database connection error: {e}")
-            
-    def create_tables(self):
+            messagebox.showerror("Erreur", f"Erreur de connexion à la base de données: {e}")
+        
+        # Création de l'interface
+        self.create_widgets()
+        
+    def create_table(self):
         try:
             self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS parking_spaces (
+                CREATE TABLE IF NOT EXISTS voitures (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    space_number VARCHAR(10) UNIQUE NOT NULL,
-                    status VARCHAR(20) DEFAULT 'available',
-                    vehicle_id INT,
-                    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    marque VARCHAR(50) NOT NULL,
+                    modele VARCHAR(50) NOT NULL,
+                    immatriculation VARCHAR(20) UNIQUE NOT NULL,
+                    etat VARCHAR(20) DEFAULT 'disponible',
+                    date_ajout TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
-            self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS vehicles (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    license_plate VARCHAR(20) UNIQUE NOT NULL,
-                    make VARCHAR(50),
-                    model VARCHAR(50),
-                    entry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    exit_time TIMESTAMP,
-                    payment_status VARCHAR(20) DEFAULT 'pending'
-                )
-            """)
-            
-            self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS revenue (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    date DATE,
-                    amount DECIMAL(10,2),
-                    payment_method VARCHAR(20),
-                    vehicle_id INT
-                )
-            """)
-            
             self.conn.commit()
         except Error as e:
-            messagebox.showerror("Error", f"Table creation error: {e}")
-            
-    def create_sidebar(self):
-        # Create sidebar frame
-        self.sidebar = ctk.CTkFrame(self.main_container, width=250)
-        self.sidebar.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+            messagebox.showerror("Erreur", f"Erreur lors de la création de la table: {e}")
+    
+    def create_widgets(self):
+        # Frame principal
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Add logo
-        logo_label = ctk.CTkLabel(self.sidebar, text="PMS", font=("Arial", 24, "bold"))
-        logo_label.pack(pady=20)
+        # Titre
+        ttk.Label(main_frame, text="Gestion du Parc Automobile", font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=4, pady=10)
         
-        # Navigation buttons
-        nav_buttons = [
-            ("Dashboard", self.show_dashboard),
-            ("Parking Spaces", self.show_parking_spaces),
-            ("Vehicles", self.show_vehicles),
-            ("Revenue", self.show_revenue),
-            ("Reports", self.show_reports),
-            ("Settings", self.show_settings)
-        ]
+        # Formulaire d'ajout
+        form_frame = ttk.LabelFrame(main_frame, text="Ajouter une voiture", padding="10")
+        form_frame.grid(row=1, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=10)
         
-        for text, command in nav_buttons:
-            btn = ctk.CTkButton(
-                self.sidebar,
-                text=text,
-                command=command,
-                width=200,
-                height=40,
-                corner_radius=10
-            )
-            btn.pack(pady=5, padx=10)
-            
-        # Add theme toggle
-        self.theme_btn = ctk.CTkButton(
-            self.sidebar,
-            text="Toggle Theme",
-            command=self.toggle_theme,
-            width=200,
-            height=40,
-            corner_radius=10
-        )
-        self.theme_btn.pack(side=tk.BOTTOM, pady=20, padx=10)
+        ttk.Label(form_frame, text="Marque:").grid(row=0, column=0, padx=5, pady=5)
+        self.marque_entry = ttk.Entry(form_frame)
+        self.marque_entry.grid(row=0, column=1, padx=5, pady=5)
         
-    def create_main_content(self):
-        # Create main content frame
-        self.main_content = ctk.CTkFrame(self.main_container)
-        self.main_content.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        ttk.Label(form_frame, text="Modèle:").grid(row=0, column=2, padx=5, pady=5)
+        self.modele_entry = ttk.Entry(form_frame)
+        self.modele_entry.grid(row=0, column=3, padx=5, pady=5)
         
-        # Create header
-        self.header = ctk.CTkFrame(self.main_content, height=60)
-        self.header.pack(fill=tk.X, padx=10, pady=10)
+        ttk.Label(form_frame, text="Immatriculation:").grid(row=1, column=0, padx=5, pady=5)
+        self.immatriculation_entry = ttk.Entry(form_frame)
+        self.immatriculation_entry.grid(row=1, column=1, padx=5, pady=5)
         
-        # Add header widgets
-        self.title_label = ctk.CTkLabel(self.header, text="Dashboard", font=("Arial", 20, "bold"))
-        self.title_label.pack(side=tk.LEFT, padx=20)
+        ttk.Button(form_frame, text="Ajouter", command=self.ajouter_voiture).grid(row=1, column=3, padx=5, pady=5)
         
-        # Add notification button
-        self.notification_btn = ctk.CTkButton(
-            self.header,
-            text="🔔",
-            width=40,
-            height=40,
-            corner_radius=20,
-            command=self.show_notifications
-        )
-        self.notification_btn.pack(side=tk.RIGHT, padx=20)
+        # Barre de recherche
+        search_frame = ttk.Frame(main_frame)
+        search_frame.grid(row=2, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=10)
         
-        # Create dashboard content
-        self.dashboard_content = ctk.CTkFrame(self.main_content)
-        self.dashboard_content.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        ttk.Label(search_frame, text="Rechercher:").grid(row=0, column=0, padx=5)
+        self.search_entry = ttk.Entry(search_frame, width=40)
+        self.search_entry.grid(row=0, column=1, padx=5)
+        ttk.Button(search_frame, text="Rechercher", command=self.rechercher_voiture).grid(row=0, column=2, padx=5)
         
-        # Initialize dashboard widgets
-        self.create_dashboard_widgets()
+        # Tableau des voitures
+        self.tree = ttk.Treeview(main_frame, columns=("ID", "Marque", "Modèle", "Immatriculation", "État"), show="headings")
+        self.tree.grid(row=3, column=0, columnspan=4, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
-    def create_dashboard_widgets(self):
-        # Create grid layout for widgets
-        self.dashboard_content.grid_columnconfigure((0, 1, 2), weight=1)
-        self.dashboard_content.grid_rowconfigure((0, 1), weight=1)
+        # Configuration des colonnes
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Marque", text="Marque")
+        self.tree.heading("Modèle", text="Modèle")
+        self.tree.heading("Immatriculation", text="Immatriculation")
+        self.tree.heading("État", text="État")
         
-        # Parking Space Status
-        self.space_status_frame = ctk.CTkFrame(self.dashboard_content)
-        self.space_status_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        # Boutons d'action
+        action_frame = ttk.Frame(main_frame)
+        action_frame.grid(row=4, column=0, columnspan=4, pady=10)
         
-        # Revenue Chart
-        self.revenue_frame = ctk.CTkFrame(self.dashboard_content)
-        self.revenue_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        ttk.Button(action_frame, text="Modifier", command=self.modifier_voiture).grid(row=0, column=0, padx=5)
+        ttk.Button(action_frame, text="Supprimer", command=self.supprimer_voiture).grid(row=0, column=1, padx=5)
+        ttk.Button(action_frame, text="Changer État", command=self.changer_etat).grid(row=0, column=2, padx=5)
         
-        # Vehicle Statistics
-        self.vehicle_stats_frame = ctk.CTkFrame(self.dashboard_content)
-        self.vehicle_stats_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
+        # Charger les données initiales
+        self.charger_donnees()
+    
+    def charger_donnees(self):
+        # Vider le tableau
+        for item in self.tree.get_children():
+            self.tree.delete(item)
         
-        # Recent Activity
-        self.activity_frame = ctk.CTkFrame(self.dashboard_content)
-        self.activity_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
-        
-        # Update widgets with data
-        self.update_dashboard_widgets()
-        
-    def update_dashboard_widgets(self):
-        # Update parking space status
-        self.update_space_status()
-        
-        # Update revenue chart
-        self.update_revenue_chart()
-        
-        # Update vehicle statistics
-        self.update_vehicle_stats()
-        
-        # Update recent activity
-        self.update_recent_activity()
-        
-    def update_space_status(self):
         try:
-            self.cursor.execute("SELECT status, COUNT(*) FROM parking_spaces GROUP BY status")
-            results = self.cursor.fetchall()
-            
-            # Create pie chart
-            fig, ax = plt.subplots(figsize=(5, 5))
-            statuses = [row[0] for row in results]
-            counts = [row[1] for row in results]
-            
-            ax.pie(counts, labels=statuses, autopct='%1.1f%%', startangle=90)
-            ax.axis('equal')
-            
-            # Add canvas to frame
-            canvas = FigureCanvasTkAgg(fig, master=self.space_status_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-            
+            self.cursor.execute("SELECT * FROM voitures")
+            for row in self.cursor.fetchall():
+                self.tree.insert("", tk.END, values=row)
         except Error as e:
-            messagebox.showerror("Error", f"Error updating space status: {e}")
-            
-    def update_revenue_chart(self):
+            messagebox.showerror("Erreur", f"Erreur lors du chargement des données: {e}")
+    
+    def ajouter_voiture(self):
+        marque = self.marque_entry.get()
+        modele = self.modele_entry.get()
+        immatriculation = self.immatriculation_entry.get()
+        
+        if not all([marque, modele, immatriculation]):
+            messagebox.showwarning("Attention", "Veuillez remplir tous les champs")
+            return
+        
         try:
             self.cursor.execute("""
-                SELECT DATE(date) as day, SUM(amount) as total
-                FROM revenue
-                GROUP BY DATE(date)
-                ORDER BY day DESC
-                LIMIT 7
-            """)
-            results = self.cursor.fetchall()
-            
-            # Create bar chart
-            fig, ax = plt.subplots(figsize=(5, 5))
-            days = [row[0] for row in results]
-            amounts = [row[1] for row in results]
-            
-            ax.bar(days, amounts)
-            ax.set_title("Daily Revenue")
-            ax.set_xlabel("Date")
-            ax.set_ylabel("Amount")
-            
-            # Add canvas to frame
-            canvas = FigureCanvasTkAgg(fig, master=self.revenue_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-            
+                INSERT INTO voitures (marque, modele, immatriculation)
+                VALUES (%s, %s, %s)
+            """, (marque, modele, immatriculation))
+            self.conn.commit()
+            messagebox.showinfo("Succès", "Voiture ajoutée avec succès")
+            self.charger_donnees()
+            # Réinitialiser les champs
+            self.marque_entry.delete(0, tk.END)
+            self.modele_entry.delete(0, tk.END)
+            self.immatriculation_entry.delete(0, tk.END)
         except Error as e:
-            messagebox.showerror("Error", f"Error updating revenue chart: {e}")
+            messagebox.showerror("Erreur", f"Erreur lors de l'ajout: {e}")
+    
+    def modifier_voiture(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Attention", "Veuillez sélectionner une voiture")
+            return
+        
+        item = self.tree.item(selected_item[0])
+        values = item['values']
+        
+        # Créer une fenêtre de modification
+        edit_window = tk.Toplevel(self.root)
+        edit_window.title("Modifier la voiture")
+        edit_window.geometry("300x200")
+        
+        ttk.Label(edit_window, text="Marque:").grid(row=0, column=0, padx=5, pady=5)
+        marque_entry = ttk.Entry(edit_window)
+        marque_entry.grid(row=0, column=1, padx=5, pady=5)
+        marque_entry.insert(0, values[1])
+        
+        ttk.Label(edit_window, text="Modèle:").grid(row=1, column=0, padx=5, pady=5)
+        modele_entry = ttk.Entry(edit_window)
+        modele_entry.grid(row=1, column=1, padx=5, pady=5)
+        modele_entry.insert(0, values[2])
+        
+        ttk.Label(edit_window, text="Immatriculation:").grid(row=2, column=0, padx=5, pady=5)
+        immatriculation_entry = ttk.Entry(edit_window)
+        immatriculation_entry.grid(row=2, column=1, padx=5, pady=5)
+        immatriculation_entry.insert(0, values[3])
+        
+        def save_changes():
+            try:
+                self.cursor.execute("""
+                    UPDATE voitures 
+                    SET marque = %s, modele = %s, immatriculation = %s
+                    WHERE id = %s
+                """, (marque_entry.get(), modele_entry.get(), immatriculation_entry.get(), values[0]))
+                self.conn.commit()
+                messagebox.showinfo("Succès", "Voiture modifiée avec succès")
+                self.charger_donnees()
+                edit_window.destroy()
+            except Error as e:
+                messagebox.showerror("Erreur", f"Erreur lors de la modification: {e}")
+        
+        ttk.Button(edit_window, text="Enregistrer", command=save_changes).grid(row=3, column=0, columnspan=2, pady=10)
+    
+    def supprimer_voiture(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Attention", "Veuillez sélectionner une voiture")
+            return
+        
+        if messagebox.askyesno("Confirmation", "Êtes-vous sûr de vouloir supprimer cette voiture ?"):
+            item = self.tree.item(selected_item[0])
+            values = item['values']
             
-    def update_vehicle_stats(self):
+            try:
+                self.cursor.execute("DELETE FROM voitures WHERE id = %s", (values[0],))
+                self.conn.commit()
+                messagebox.showinfo("Succès", "Voiture supprimée avec succès")
+                self.charger_donnees()
+            except Error as e:
+                messagebox.showerror("Erreur", f"Erreur lors de la suppression: {e}")
+    
+    def changer_etat(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Attention", "Veuillez sélectionner une voiture")
+            return
+        
+        item = self.tree.item(selected_item[0])
+        values = item['values']
+        nouvel_etat = "indisponible" if values[4] == "disponible" else "disponible"
+        
         try:
             self.cursor.execute("""
-                SELECT 
-                    COUNT(*) as total_vehicles,
-                    SUM(CASE WHEN exit_time IS NULL THEN 1 ELSE 0 END) as current_vehicles,
-                    AVG(TIMESTAMPDIFF(HOUR, entry_time, COALESCE(exit_time, NOW()))) as avg_duration
-                FROM vehicles
-            """)
-            result = self.cursor.fetchone()
-            
-            # Create stats display
-            stats_frame = ctk.CTkFrame(self.vehicle_stats_frame)
-            stats_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-            
-            ctk.CTkLabel(stats_frame, text=f"Total Vehicles: {result[0]}", font=("Arial", 14)).pack(pady=5)
-            ctk.CTkLabel(stats_frame, text=f"Current Vehicles: {result[1]}", font=("Arial", 14)).pack(pady=5)
-            ctk.CTkLabel(stats_frame, text=f"Avg Duration: {result[2]:.1f} hours", font=("Arial", 14)).pack(pady=5)
-            
+                UPDATE voitures 
+                SET etat = %s
+                WHERE id = %s
+            """, (nouvel_etat, values[0]))
+            self.conn.commit()
+            messagebox.showinfo("Succès", f"État changé à {nouvel_etat}")
+            self.charger_donnees()
         except Error as e:
-            messagebox.showerror("Error", f"Error updating vehicle stats: {e}")
-            
-    def update_recent_activity(self):
+            messagebox.showerror("Erreur", f"Erreur lors du changement d'état: {e}")
+    
+    def rechercher_voiture(self):
+        search_term = self.search_entry.get()
+        if not search_term:
+            self.charger_donnees()
+            return
+        
         try:
             self.cursor.execute("""
-                SELECT v.license_plate, v.entry_time, ps.space_number, ps.status
-                FROM vehicles v
-                JOIN parking_spaces ps ON v.id = ps.vehicle_id
-                ORDER BY v.entry_time DESC
-                LIMIT 10
-            """)
-            results = self.cursor.fetchall()
+                SELECT * FROM voitures 
+                WHERE marque LIKE %s 
+                OR modele LIKE %s 
+                OR immatriculation LIKE %s
+            """, (f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"))
             
-            # Create activity list
-            activity_list = ctk.CTkScrollableFrame(self.activity_frame)
-            activity_list.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            # Vider le tableau
+            for item in self.tree.get_children():
+                self.tree.delete(item)
             
-            for row in results:
-                activity_item = ctk.CTkFrame(activity_list)
-                activity_item.pack(fill=tk.X, pady=5)
-                
-                ctk.CTkLabel(activity_item, text=f"Vehicle {row[0]} entered at {row[1]}", font=("Arial", 12)).pack(side=tk.LEFT, padx=5)
-                ctk.CTkLabel(activity_item, text=f"Space {row[2]} - {row[3]}", font=("Arial", 12)).pack(side=tk.RIGHT, padx=5)
-                
+            # Afficher les résultats
+            for row in self.cursor.fetchall():
+                self.tree.insert("", tk.END, values=row)
         except Error as e:
-            messagebox.showerror("Error", f"Error updating recent activity: {e}")
-            
-    def start_data_refresh(self):
-        def refresh_data():
-            while True:
-                self.update_dashboard_widgets()
-                time.sleep(60)  # Refresh every minute
-                
-        refresh_thread = threading.Thread(target=refresh_data, daemon=True)
-        refresh_thread.start()
-        
-    def toggle_theme(self):
-        current_mode = ctk.get_appearance_mode()
-        new_mode = "light" if current_mode == "dark" else "dark"
-        ctk.set_appearance_mode(new_mode)
-        
-    def show_notifications(self):
-        # Create notification window
-        notification_window = ctk.CTkToplevel(self)
-        notification_window.title("Notifications")
-        notification_window.geometry("400x300")
-        
-        # Add notification list
-        notification_list = ctk.CTkScrollableFrame(notification_window)
-        notification_list.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # Add sample notifications
-        notifications = [
-            "Parking lot is 90% full",
-            "New vehicle entered at Space A1",
-            "Payment received for Vehicle ABC123",
-            "System maintenance scheduled for tomorrow"
-        ]
-        
-        for notification in notifications:
-            notification_item = ctk.CTkFrame(notification_list)
-            notification_item.pack(fill=tk.X, pady=5)
-            
-            ctk.CTkLabel(notification_item, text=notification, font=("Arial", 12)).pack(padx=5, pady=5)
-            
-    def show_dashboard(self):
-        self.title_label.configure(text="Dashboard")
-        self.create_dashboard_widgets()
-        
-    def show_parking_spaces(self):
-        self.title_label.configure(text="Parking Spaces")
-        # Implement parking spaces view
-        
-    def show_vehicles(self):
-        self.title_label.configure(text="Vehicles")
-        # Implement vehicles view
-        
-    def show_revenue(self):
-        self.title_label.configure(text="Revenue")
-        # Implement revenue view
-        
-    def show_reports(self):
-        self.title_label.configure(text="Reports")
-        # Implement reports view
-        
-    def show_settings(self):
-        self.title_label.configure(text="Settings")
-        # Implement settings view
+            messagebox.showerror("Erreur", f"Erreur lors de la recherche: {e}")
 
 if __name__ == "__main__":
-    app = DashboardAdmin()
-    app.mainloop()
+    root = tk.Tk()
+    app = DashboardAdmin(root)
+    root.mainloop()
