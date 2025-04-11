@@ -66,7 +66,7 @@ class CarManagementApp:
         
         # Style pour les boutons
         style.configure('Add.TButton',
-            font=('Segoe UI', 10, 'bold'),
+            font=('Calibri', 11, 'bold'),
             padding=8,
             background="#4CAF50",
             foreground="white",
@@ -74,7 +74,7 @@ class CarManagementApp:
         )
         
         style.configure('Edit.TButton',
-            font=('Segoe UI', 10, 'bold'),
+            font=('Calibri', 11, 'bold'),
             padding=8,
             background="#2196F3",
             foreground="white",
@@ -82,7 +82,7 @@ class CarManagementApp:
         )
         
         style.configure('Delete.TButton',
-            font=('Segoe UI', 10, 'bold'),
+            font=('Calibri', 11, 'bold'),
             padding=8,
             background="#F44336",
             foreground="white",
@@ -90,7 +90,7 @@ class CarManagementApp:
         )
         
         style.configure('Image.TButton',
-            font=('Segoe UI', 10, 'bold'),
+            font=('Calibri', 11, 'bold'),
             padding=8,
             background="#9C27B0",
             foreground="white",
@@ -98,7 +98,7 @@ class CarManagementApp:
         )
         
         style.configure('Search.TButton',
-            font=('Segoe UI', 10),
+            font=('Calibri', 11),
             padding=6,
             background="#2196F3",
             foreground="white",
@@ -254,7 +254,7 @@ class CarManagementApp:
         
         # Label pour l'image avec un style spécifique
         self.image_label = ttk.Label(self.image_frame, style="Image.TLabel")
-        self.image_label.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+        self.image_label.pack(expand=True, fill=tk.BOTH, padx=25, pady=10)
 
         # Frame pour le formulaire (en bas)
         form_frame = ttk.LabelFrame(main_frame, text="Informations du véhicule", style="Content.TFrame")
@@ -283,29 +283,38 @@ class CarManagementApp:
         button_frame = ttk.Frame(form_frame, style="Content.TFrame")
         button_frame.grid(row=2, column=0, columnspan=4, pady=10)
 
-        # Boutons d'action
-        selectimage_button=ttk.Button(button_frame, text="Sélectionner Image", command=self.select_image, style="Action.TButton")
+        # Première ligne de boutons
+        top_button_frame = ttk.Frame(button_frame)
+        top_button_frame.pack(fill=tk.X, pady=5)
+
+        selectimage_button=ttk.Button(top_button_frame, text="Sélectionner Image", command=self.select_image, style="Action.TButton")
         if hasattr(self, 'icon_newimage') and self.icon_newimage:
             selectimage_button.configure(image=self.icon_newimage, compound="left")
         selectimage_button.pack(side=tk.LEFT, padx=5)
-        add_button = ttk.Button(button_frame, text="Ajouter", command=self.add_car, style="Action.TButton")
+
+        add_button = ttk.Button(top_button_frame, text="Ajouter", command=self.add_car, style="Action.TButton")
         if hasattr(self, 'icon_edit') and self.icon_edit:
             add_button.configure(image=self.icon_edit, compound="left")
         add_button.pack(side=tk.LEFT, padx=5)
 
-        modifier_button=ttk.Button(button_frame, text="Modifier", command=self.update_car, style="Action.TButton")
+        modifier_button=ttk.Button(top_button_frame, text="Modifier", command=self.update_car, style="Action.TButton")
         if hasattr(self, 'icon_add') and self.icon_add:
             modifier_button.configure(image=self.icon_add, compound="left")
         modifier_button.pack(side=tk.LEFT, padx=5)
 
-        delete_button=ttk.Button(button_frame, text="Supprimer", command=self.delete_car, style="Action.TButton")
+        reload_button=ttk.Button(top_button_frame, text="Rafraîchir", command=self.load_voiture_admin, style="Action.TButton")
+        if hasattr(self, 'icon_reload') and self.icon_reload:
+            reload_button.configure(image=self.icon_reload, compound="right")
+        reload_button.pack(side=tk.RIGHT, padx=5)
+
+        # Deuxième ligne avec le bouton Supprimer
+        bottom_button_frame = ttk.Frame(button_frame)
+        bottom_button_frame.pack(fill=tk.X, pady=5)
+
+        delete_button=ttk.Button(bottom_button_frame, text="Supprimer", command=self.delete_car, style="Action.TButton")
         if hasattr(self, 'icon_delete') and self.icon_delete:
             delete_button.configure(image=self.icon_delete, compound="left")
-        delete_button.pack(side=tk.LEFT, padx=5)
-        reload_button=ttk.Button(button_frame, text="Rafraîchir", command=self.load_voiture_admin, style="Action.TButton")
-        if hasattr(self, 'icon_reload') and self.icon_reload:
-            reload_button.configure(image=self.icon_reload, compound="left")
-        reload_button.pack(side=tk.LEFT, padx=5)
+        delete_button.pack(side=tk.TOP, padx=5)
 
         # Frame pour la recherche (au-dessus du tableau)
         search_frame = ttk.Frame(main_frame, style="Content.TFrame")
@@ -370,15 +379,8 @@ class CarManagementApp:
             # Ouvrir l'image
             image = Image.open(image_path)
             
-            # Calculer les dimensions pour maintenir le ratio
-            # Définir une taille maximale pour l'aperçu
-            max_size = (300, 300)
-            ratio = min(max_size[0]/image.width, max_size[1]/image.height)
-            new_width = int(image.width * ratio)
-            new_height = int(image.height * ratio)
-            
-            # Redimensionner l'image
-            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            # Redimensionner l'image à une taille fixe de 300x300
+            image = image.resize((120, 120), Image.Resampling.LANCZOS)
             
             # Créer et afficher l'image
             photo = ImageTk.PhotoImage(image)
@@ -485,7 +487,6 @@ class CarManagementApp:
                 
                 # Lier un événement de clic sur la colonne Actions
                 self.tree.tag_bind(item, '<ButtonRelease-1>', lambda e, car=car: self.handle_action_click(e, car))
-
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur lors du chargement des données: {str(e)}")
 
@@ -657,7 +658,6 @@ class CarManagementApp:
                         # Effacer l'image si aucune image n'est disponible
                         self.image_label.configure(image='')
                         self.current_image_path = None
-                        
             except Exception as e:
                 messagebox.showerror("Erreur", f"Erreur lors de la récupération des données: {str(e)}")
 
