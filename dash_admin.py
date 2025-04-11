@@ -11,7 +11,6 @@ class CarManagementApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Gestion de Parc Automobile")
-        self.root.geometry("1200x600")
         self.root.configure(bg="#e6f2ff")
 
         self.image_folder = "car_images"
@@ -154,6 +153,19 @@ class CarManagementApp:
             foreground=[('selected', '#333333')]
         )
 
+        # Style pour le cadre de l'image
+        #style.configure('Image.TFrame',
+            #background="#ffffff",
+            #relief="flat",
+            #borderwidth=0
+        #)
+        
+        # Style pour le label de l'image
+        # style.configure('Image.TLabel',
+        #     background="#ffffff",
+        #     anchor="center"
+        # )
+
     def load_icons(self):
         """Charge les icônes de l'application avec gestion des erreurs"""
         self.icon_add = None
@@ -221,12 +233,12 @@ class CarManagementApp:
         header_frame = ttk.Frame(self.root, style="Header.TFrame")
         header_frame.pack(fill=tk.X, padx=0, pady=0)
 
-        title_label = ttk.Label(
-            header_frame,
-            text="Gestion de Parc Automobile",
-            style="Header.TLabel"
-        )
-        title_label.pack(side=tk.LEFT, padx=20, pady=15)
+        # title_label = ttk.Label(
+        #     header_frame,
+        #     #text="Gestion de Parc Automobile",
+        #     #style="Header.TLabel"
+        # )
+        # title_label.pack(side=tk.LEFT, padx=20, pady=15)
 
         # Frame principal avec grid
         main_frame = ttk.Frame(self.root, style="Content.TFrame")
@@ -237,10 +249,11 @@ class CarManagementApp:
         main_frame.columnconfigure(1, weight=1)  # Colonne droite plus étroite
 
         # Frame pour l'image (en haut à droite)
-        self.image_frame = ttk.LabelFrame(main_frame, text="Image du véhicule", style="Content.TFrame")
+        self.image_frame = ttk.LabelFrame(main_frame, text="Image du véhicule", style="Image.TFrame")
         self.image_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=5)
-
-        self.image_label = ttk.Label(self.image_frame)
+        
+        # Label pour l'image avec un style spécifique
+        self.image_label = ttk.Label(self.image_frame, style="Image.TLabel")
         self.image_label.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
         # Frame pour le formulaire (en bas)
