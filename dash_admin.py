@@ -645,10 +645,10 @@ class CarManagementApp:
                 car = self.cursor.fetchone()
                 if car:
                     # Mettre à jour les champs du formulaire
-                    self.marque_var.set(car[1])
-                    self.modele_var.set(car[2])
-                    self.annee_var.set(str(car[3]))
-                    self.prix_var.set(str(car[4]))
+                    # self.marque_var.set(car[1])
+                    # self.modele_var.set(car[2])
+                    # self.annee_var.set(str(car[3]))
+                    # self.prix_var.set(str(car[4]))
                     
                     # Afficher l'image si elle existe
                     if car[5] and os.path.exists(car[5]):
