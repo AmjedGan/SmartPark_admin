@@ -42,7 +42,7 @@ class CarManagementApp:
         style = ttk.Style()
         style.theme_use("clam")
         
-        # Couleurs principales
+        
         style.configure('Custom.TFrame',
             background="#f5f5f5",
             relief="flat"
@@ -56,7 +56,7 @@ class CarManagementApp:
             padding=5
         )
         
-        # Style pour les champs de saisie
+        
         style.configure('Custom.TEntry',
             font=('Segoe UI', 10),
             padding=5,
@@ -64,7 +64,7 @@ class CarManagementApp:
             fieldbackground="white"
         )
         
-        # Style pour les boutons
+        
         style.configure('Add.TButton',
             font=('Calibri', 11, 'bold'),
             padding=8,
@@ -105,7 +105,7 @@ class CarManagementApp:
             relief="flat"
         )
         
-        # Configuration des effets de survol
+        
         style.map('Add.TButton',
             background=[('active', '#388E3C')],
             relief=[('pressed', 'sunken')]
@@ -147,7 +147,7 @@ class CarManagementApp:
             relief="flat"
         )
         
-        # Configuration de la couleur de sélection en bleu clair
+        
         style.map('Treeview',
             background=[('selected', '#90CAF9')],
             foreground=[('selected', '#333333')]
@@ -182,7 +182,7 @@ class CarManagementApp:
                 print(f"Le dossier {self.icon_folder} a été créé. Veuillez y ajouter les icônes nécessaires.")
                 return
                 
-            # Liste des icônes nécessaires
+            
             required_icons = {
                 'pen.png': 'icon_add',
                 'plus.png': 'icon_edit',
@@ -193,7 +193,6 @@ class CarManagementApp:
                 'newimage.png': 'icon_newimage'
             }
             
-            # Vérification et chargement des icônes
             for icon_file, var_name in required_icons.items():
                 icon_path = os.path.join(self.icon_folder, icon_file)
                 print(f"Tentative de chargement de l'icône: {icon_path}")
@@ -240,28 +239,27 @@ class CarManagementApp:
         # )
         # title_label.pack(side=tk.LEFT, padx=20, pady=15)
 
-        # Frame principal avec grid
         main_frame = ttk.Frame(self.root, style="Content.TFrame")
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        # Configuration des colonnes du main_frame
+      
         main_frame.columnconfigure(0, weight=3)  # Colonne gauche plus large
         main_frame.columnconfigure(1, weight=1)  # Colonne droite plus étroite
 
-        # Frame pour l'image (en haut à droite)
+       
         self.image_frame = ttk.LabelFrame(main_frame, text="Image du véhicule", style="Image.TFrame")
         self.image_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=5)
         
-        # Label pour l'image avec un style spécifique
+        
         self.image_label = ttk.Label(self.image_frame, style="Image.TLabel")
         self.image_label.pack(expand=True, fill=tk.BOTH, padx=25, pady=10)
 
-        # Frame pour le formulaire (en bas)
+        
         form_frame = ttk.LabelFrame(main_frame, text="Informations du véhicule", style="Content.TFrame")
         form_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
 
-        # Grid pour les champs du formulaire
-        # Ligne 1
+        
+        
         ttk.Label(form_frame, text="Marque:", style="Content.TLabel").grid(row=0, column=0, padx=5, pady=5)
         self.marque_var = tk.StringVar()
         ttk.Entry(form_frame, textvariable=self.marque_var, width=20).grid(row=0, column=1, padx=5, pady=5)
@@ -270,7 +268,7 @@ class CarManagementApp:
         self.modele_var = tk.StringVar()
         ttk.Entry(form_frame, textvariable=self.modele_var, width=20).grid(row=0, column=3, padx=5, pady=5)
 
-        # Ligne 2
+        
         ttk.Label(form_frame, text="Année:", style="Content.TLabel").grid(row=1, column=0, padx=5, pady=5)
         self.annee_var = tk.StringVar()
         ttk.Entry(form_frame, textvariable=self.annee_var, width=20).grid(row=1, column=1, padx=5, pady=5)
@@ -279,11 +277,11 @@ class CarManagementApp:
         self.prix_var = tk.StringVar()
         ttk.Entry(form_frame, textvariable=self.prix_var, width=20).grid(row=1, column=3, padx=5, pady=5)
 
-        # Frame pour les boutons (sous le formulaire)
+        
         button_frame = ttk.Frame(form_frame, style="Content.TFrame")
         button_frame.grid(row=2, column=0, columnspan=4, pady=10)
 
-        # Première ligne de boutons
+        
         top_button_frame = ttk.Frame(button_frame)
         top_button_frame.pack(fill=tk.X, pady=5)
 
@@ -307,7 +305,7 @@ class CarManagementApp:
             reload_button.configure(image=self.icon_reload, compound="right")
         reload_button.pack(side=tk.RIGHT, padx=5)
 
-        # Deuxième ligne avec le bouton Supprimer
+        
         bottom_button_frame = ttk.Frame(button_frame)
         bottom_button_frame.pack(fill=tk.X, pady=5)
 
@@ -316,7 +314,7 @@ class CarManagementApp:
             delete_button.configure(image=self.icon_delete, compound="left")
         delete_button.pack(side=tk.TOP, padx=5)
 
-        # Frame pour la recherche (au-dessus du tableau)
+        
         search_frame = ttk.Frame(main_frame, style="Content.TFrame")
         search_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
 
@@ -325,7 +323,7 @@ class CarManagementApp:
         self.search_var.trace('w', self.on_search_change)
         ttk.Entry(search_frame, textvariable=self.search_var, width=40).pack(side=tk.LEFT, padx=5)
 
-        # Tableau principal
+        
         self.tree = ttk.Treeview(
             main_frame,
             columns=("ID", "Marque", "Modele", "Annee", "Prix", "Actions"),
@@ -334,7 +332,7 @@ class CarManagementApp:
         )
         self.tree.grid(row=3, column=0, columnspan=2, sticky="nsew", padx=10, pady=5)
 
-        # Configuration des colonnes
+        
         self.tree.heading("ID", text="ID")
         self.tree.heading("Marque", text="Marque")
         self.tree.heading("Modele", text="Modèle")
@@ -342,7 +340,7 @@ class CarManagementApp:
         self.tree.heading("Prix", text="Prix")
         self.tree.heading("Actions", text="Actions")
 
-        # Ajustement des colonnes
+        
         self.tree.column("ID", width=50)
         self.tree.column("Marque", width=200)
         self.tree.column("Modele", width=200)
@@ -350,10 +348,8 @@ class CarManagementApp:
         self.tree.column("Prix", width=100)
         self.tree.column("Actions", width=200)
 
-        # Ajouter l'événement de sélection
+        
         self.tree.bind('<<TreeviewSelect>>', self.on_select)
-
-        # Scrollbar pour le tableau
         scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.tree.yview)
         scrollbar.grid(row=3, column=2, sticky="ns")
         self.tree.configure(yscrollcommand=scrollbar.set)
@@ -376,16 +372,13 @@ class CarManagementApp:
 
     def display_image(self, image_path):
         try:
-            # Ouvrir l'image
-            image = Image.open(image_path)
             
-            # Redimensionner l'image à une taille fixe de 300x300
+            image = Image.open(image_path)
             image = image.resize((120, 120), Image.Resampling.LANCZOS)
             
-            # Créer et afficher l'image
             photo = ImageTk.PhotoImage(image)
             self.image_label.configure(image=photo)
-            self.image_label.image = photo  # Garder une référence
+            self.image_label.image = photo 
         except Exception as e:
             messagebox.showerror("Erreur", f"Impossible de charger l'image: {str(e)}")
             self.image_label.configure(image='')
@@ -478,30 +471,23 @@ class CarManagementApp:
         try:
             self.cursor.execute('SELECT * FROM voiture_admin ORDER BY date_ajout DESC')
             for car in self.cursor.fetchall():
-                # Créer une chaîne pour représenter les actions disponibles
-                actions = "👁️ Consulter"
-                
-                # Insérer la ligne avec les valeurs et les actions
+                actions = "Consulter"
                 values = list(car[:5]) + [actions]
                 item = self.tree.insert('', 'end', values=values)
-                
-                # Lier un événement de clic sur la colonne Actions
                 self.tree.tag_bind(item, '<ButtonRelease-1>', lambda e, car=car: self.handle_action_click(e, car))
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur lors du chargement des données: {str(e)}")
 
     def handle_action_click(self, event, car):
-        # Obtenir la colonne cliquée
         region = self.tree.identify_region(event.x, event.y)
         if region == "cell":
             column = self.tree.identify_column(event.x)
-            if column == "#6":  # Colonne Actions
-                # Créer un menu contextuel
+            if column == "#6":  
                 popup = tk.Menu(self.root, tearoff=0)
                 popup.add_command(label="👁️ Consulter", command=lambda: self.show_image_dialog(car[5]))
                 
                 
-                # Afficher le menu à la position du clic
+               
                 try:
                     popup.tk_popup(event.x_root, event.y_root)
                 finally:
@@ -512,7 +498,7 @@ class CarManagementApp:
             messagebox.showwarning("Attention", "Aucune image disponible")
             return
 
-        # Créer une nouvelle fenêtre pour l'image
+        
         dialog = tk.Toplevel(self.root)
         dialog.title("Aperçu de l'image")
         dialog.geometry("800x600")
@@ -520,9 +506,8 @@ class CarManagementApp:
         dialog.grab_set()
 
         try:
-            # Ouvrir et redimensionner l'image
+           
             image = Image.open(image_path)
-            # Calculer les dimensions pour maintenir le ratio
             ratio = min(700/image.width, 500/image.height)
             new_width = int(image.width * ratio)
             new_height = int(image.height * ratio)
@@ -530,12 +515,10 @@ class CarManagementApp:
             
             photo = ImageTk.PhotoImage(image)
             
-            # Créer un label pour afficher l'image
+           
             label = ttk.Label(dialog, image=photo)
-            label.image = photo  # Garder une référence
+            label.image = photo
             label.pack(padx=20, pady=20)
-            
-            # Bouton pour fermer
             ttk.Button(dialog, text="Fermer", command=dialog.destroy).pack(pady=10)
             
         except Exception as e:
@@ -544,7 +527,6 @@ class CarManagementApp:
 
     def show_edit_dialog(self, car_id):
         try:
-            # Récupérer les données de la voiture
             self.cursor.execute('SELECT * FROM voiture_admin WHERE id = %s', (car_id,))
             car = self.cursor.fetchone()
             if not car:
@@ -556,15 +538,11 @@ class CarManagementApp:
             dialog.geometry("400x500")
             dialog.transient(self.root)
             dialog.grab_set()
-
-            # Variables pour stocker les valeurs
             marque_var = tk.StringVar(value=car[1])
             modele_var = tk.StringVar(value=car[2])
             annee_var = tk.StringVar(value=str(car[3]))
             prix_var = tk.StringVar(value=str(car[4]))
-            image_path = car[5]
-
-            # Création des champs du formulaire
+            image_path = car[5]     
             ttk.Label(dialog, text="Marque:").pack(pady=5)
             marque_entry = ttk.Entry(dialog, textvariable=marque_var)
             marque_entry.pack(pady=5)
@@ -572,16 +550,12 @@ class CarManagementApp:
             ttk.Label(dialog, text="Modèle:").pack(pady=5)
             modele_entry = ttk.Entry(dialog, textvariable=modele_var)
             modele_entry.pack(pady=5)
-
             ttk.Label(dialog, text="Année:").pack(pady=5)
             annee_entry = ttk.Entry(dialog, textvariable=annee_var)
             annee_entry.pack(pady=5)
-
             ttk.Label(dialog, text="Prix:").pack(pady=5)
             prix_entry = ttk.Entry(dialog, textvariable=prix_var)
             prix_entry.pack(pady=5)
-
-            # Image actuelle
             if image_path and os.path.exists(image_path):
                 try:
                     image = Image.open(image_path)
@@ -592,8 +566,6 @@ class CarManagementApp:
                     img_label.pack(pady=10)
                 except Exception:
                     pass
-
-            # Bouton pour changer l'image
             def update_image():
                 new_image_path = self.select_image()
                 if new_image_path:
@@ -602,7 +574,6 @@ class CarManagementApp:
 
             ttk.Button(dialog, text="Changer l'image", command=update_image).pack(pady=10)
 
-            # Boutons de confirmation
             buttons_frame = ttk.Frame(dialog)
             buttons_frame.pack(pady=20)
 
@@ -636,11 +607,9 @@ class CarManagementApp:
     def on_select(self, event):
         selected_item = self.tree.selection()
         if selected_item:
-            # Récupérer l'ID de la voiture sélectionnée
             car_id = self.tree.item(selected_item[0])['values'][0]
             
             try:
-                # Récupérer les informations de la voiture, y compris le chemin de l'image
                 self.cursor.execute('SELECT * FROM voiture_admin WHERE id = %s', (car_id,))
                 car = self.cursor.fetchone()
                 if car:
@@ -655,7 +624,7 @@ class CarManagementApp:
                         self.display_image(car[5])
                         self.current_image_path = car[5]
                     else:
-                        # Effacer l'image si aucune image n'est disponible
+                     
                         self.image_label.configure(image='')
                         self.current_image_path = None
             except Exception as e:
